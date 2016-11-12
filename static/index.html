@@ -51,10 +51,24 @@ function drawCircle(context,entity) {
         lineWidth = 3;
         var x = entity["x"];
         var y = entity["y"];
-        //moveTo(x,y);
-        fillStyle = entity["colour"];
+        moveTo(x,y);
+        if (entity["gradient"]){
+            grd = createLinearGradient(0.000, 100.000, 1000.000, 100.000);
+            grd.addColorStop(0.000, 'rgba(0, 85, 164, 1.000)');
+            grd.addColorStop(0.330, 'rgba(0, 85, 164, 1.000)');
+            grd.addColorStop(0.331, 'rgba(255, 255, 255, 1.000)');
+            grd.addColorStop(0.660, 'rgba(255, 255, 255, 1.000)');
+            grd.addColorStop(0.661, 'rgba(250, 60, 50, 1.000)');
+            grd.addColorStop(1.000, 'rgba(250, 60, 50, 1.000)');
+            fillStyle = grd;
+        
+        }
+        else{
+            fillStyle = entity["colour"];
+        }
         strokeStyle = fillStyle;
-        arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);  
+        arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);
+        fill();
         stroke();                                
     }
 }
@@ -124,6 +138,9 @@ function getPosition(e) {
 function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
+    var line = {};
+    line[entity] = data;
+    socket.send(JSON.stringify(line));
     //XXX: Send a XHTML Request that updates the entity you just modified!
 }
 var counter = 0;
@@ -231,16 +248,16 @@ mouse = (function() {
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'blue', 'radius':20});
 });
 
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'red', 'radius':30});
 });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+    addEntityWithoutName({'x':x,'y':y,
+                          'radius':40, 'gradient':y});
 });
 
 
@@ -254,14 +271,28 @@ function wsSetup() {
     socket = new WebSocket(url);
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
+        //Class example does nothing here *****
+        
+        wscounter = wscounter + 1;
+
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
+        
+        // Class example also does nothing after the debug
+        wscounter = wscounter - 1;
     };
     socket.onmessage = function(msg) {  
         try {
             debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            //XXX: TODO What are you going to do here?
+            var message = JSON.parse(msg.data)
+            
+            for (key in message){
+                world[key] = message[key];
+            }
+            drawNextFrame();
+
         } catch (e) {
             alert("socket on message: " + e);
         }

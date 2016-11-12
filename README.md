@@ -57,3 +57,16 @@ Contributors
 
 * Mark Galloway
 * Abram Hindle
+* Jarrett Toll
+
+Collaboration
+===========
+*Communicated with Mata Verunica's Group.
+
+References
+===========
+* Used http://victorblog.com/html5-canvas-gradient-creator/ to create my
+gradient.
+
+* Used code examples provided in lecture slides by Dr. Hindle:
+https://github.com/abramhindle/WebSocketsExamples/blob/master/chat.py
